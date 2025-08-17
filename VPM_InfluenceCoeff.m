@@ -36,7 +36,6 @@ for i = 1:NumPan %iterating over the ith control point
         end
 
  
-
         if (isnan(L(i,j)) || isinf(L(i,j)) || ~isreal(L(i,j)))
             L(i,j) = 0;
         end

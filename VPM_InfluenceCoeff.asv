@@ -31,20 +31,21 @@ for i = 1:NumPan %iterating over the ith control point
                 -atan2(A, E));
 
        
-    if (isnan(K(i,j)) || isinf(K(i,j)) || ~isreal(K(i,j)))
-        K(i,j) = 0;
-    end
+        if (isnan(K(i,j)) || isinf(K(i,j)) || ~isreal(K(i,j)))
+            K(i,j) = 0;
+        end
 
  
+        if (isnan(L(i,j)) || isinf(L(i,j)) || ~isreal(L(i,j)))
+            L(i,j) = 0;
+        end
+        end
 
-    if (isnan(L(i,j)) || isinf(L(i,j)) || ~isreal(L(i,j)))
-        L(i,j) = 0;
-    end
-    
-    i
-
+        if i == j
+            K(i,j) = 0;
+            L(i,j) = 0.5;
+        end
     end
    
-end
 end
 end

@@ -1,5 +1,4 @@
-function [Nx , Ny, Vxy, rp, psi, THETA, Cpxy_mask] = PM_streamlines(xi, yi, Xj, Yj, phi, S, gamma, U, alphad, Cp, Nx, Ny, NumPan)
-
+function [Nx , Ny, Vxy, rp, psi, THETA, Cpxy_mask] = PM_streamlines(xi, yi, Xj, Yj, phi, S, gamma, U, alpha, Cp, Nx, Ny, NumPan)
 
 nGridX = NumPan;                                                           % X-grid for streamlines and contours
 nGridY = NumPan;                                                           % Y-grid for streamlines and contours
@@ -28,23 +27,23 @@ for m = 1:1:nGridX   %iterating over the jth control point
     for n = 1:1:nGridY  %for each control point, iterate over j=1:n panels
             XP = XX(m,n);   %Current iteration's X grid point
             YP = YY(m,n);   %Current iteration's Y grid point
-            [Nxx, Nyy] = VPM_xyCoeff(XP, YP, Xj, Yj, phi,S)
+            [Nxx, Nyy] = VPM_xyCoeff(XP, YP, Xj, Yj, phi,S);
             [in,on] = inpolygon(XP,YP,Xj, Yj);
              % See if points are in or on the airfoil
              if (in == 1 || on == 1)                                         % If the grid point is in or on the airfoil
                  Vx(m,n) = 0;                                                % Set X-velocity equal to zero
                  Vy(m,n) = 0;                                                % Set Y-velocity equal to zero
             else                                                            % If the grid point is outside the airfoil
-                Vx(m,n) = U*cosd(alphad) - sum((gamma*Nxx)/(2*pi));         % Compute X-velocity
-                Vy(m,n) = U*sind(alphad) - sum((gamma*Nyy)/(2*pi));         % Compute Y-velocity
+                Vx(m,n) = U*cos(alpha) - sum((gamma*Nxx)/(2*pi));         % Compute X-velocity
+                Vy(m,n) = U*sin(alpha) - sum((gamma*Nyy)/(2*pi));         % Compute Y-velocity
             end
-          
+          Vxy(m,n) =  sqrt(Vx(m,n)^2 + Vy(m,n)^2); %velocity magnitude mesh
+          Cpxy(m,n) = 1-(Vxy(m,n)/U)^2; %pressure coefficient mesh
     end
 
 end
 
-Vxy =  sqrt(Vx.^2 + Vy.^2); %velocity magnitude mesh
-Cpxy = 1-(Vxy./U).^2; %pressure coefficient mesh
+
 Cpxy_mask = Cpxy;
 [inC, onC] = inpolygon(XX, YY, Xj, Yj);
 Cpxy_mask(inC) = NaN;
@@ -54,7 +53,7 @@ Cpxy_mask(inC) = NaN;
 %========= Stream Function Expression ==========%
 
 gamma_dS = gamma(:).*S(:); %determine strength of each vortex 
-psi = U*(YY*cosd(alphad)-XX*sind(alphad)); %initialize stream function variable and account for sine term
+psi = U*(YY*cos(alpha)-XX*sin(alpha)); %initialize stream function variable and account for sine term
 
 %Calculate the sum of the vortex contributions to the velocity potential
 
@@ -67,20 +66,21 @@ end
 
 in = inpolygon(XX, YY, Xj, Yj); %find mesh values within foil body
 psi_mask = psi;
-psi_mask(in) = NaN; %disregard streamlines solved at mesh values that fall within the surface 
+% psi_mask(in) = NaN; %disregard streamlines solved at mesh values that fall within the surface 
 
 %========== Plot Streamlines and Stagnation Points =========%
-[row, col] = find(Cpxy_mask>0.99) %Find coordinates in field that coincide with Cp ~ 1
+[row, col] = find(Cp>0.99); %Find coordinates in field that coincide with Cp ~ 1
+aoa_D = alpha*(180/pi); %convert angle of attack to degrees for plotting
 
-figure; hold on; box on
-contour(XX, YY, psi_mask, 75, 'LineWidth', 0.9); %streamlines
-fill(Xj, Yj, [0.15 0.15 0.15], 'EdgeColor', 'k'); % foil body
-for i = 1:length(row)
-    plot(xi(row(i)), yi(row(i)), 'ro', 'MarkerSize', 3, MarkerFaceColor='r')
-end
-axis equal tight
-xlabel('x/c'); ylabel('y/c');
-title(['VPM Streamlines ($\alpha = ', num2str(alphad), '$ deg)' ], 'Interpreter','latex')
-legend("Streamlines",'Airfoil Body','Stagnation Points')
+% figure; hold on; box on
+% contour(XX, YY, psi_mask, 75, 'LineWidth', 0.9); %streamlines
+% fill(Xj, Yj, [0.15 0.15 0.15], 'EdgeColor', 'k'); % foil body
+% for i = 1:length(row)
+%     plot(Xj(row(i)), Yj(row(i)), 'ro', 'MarkerSize', 3, MarkerFaceColor='r')
+% end
+% axis equal tight
+% xlabel('x/c'); ylabel('y/c');
+% title(['VPM Streamlines ($\alpha = ', num2str(aoa_D), '$ deg)' ], 'Interpreter','latex')
+% legend("Streamlines",'Airfoil Body','Stagnation Points')
 end
 
