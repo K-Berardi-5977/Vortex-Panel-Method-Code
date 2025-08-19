@@ -1,9 +1,8 @@
 function [Nx , Ny, Vxy, rp, psi, THETA, Cpxy_mask] = PM_streamlines(xi, yi, Xj, Yj, phiR, S, gamma, U, alpha, Cp, numPan)
-alphaR = alpha*(pi/180); %convert angle of attack to rads
 [Nx , Ny] = VPM_xyCoeff(xi, yi, Xj, Yj, phiR, S); %Function to Compute X and Y velocity influence coefficients for Meshgrid
 
-nGridX = numPan;                                                           % X-grid for streamlines and contours
-nGridY = numPan;                                                           % Y-grid for streamlines and contours
+nGridX = NumPan;                                                           % X-grid for streamlines and contours
+nGridY = NumPan;                                                           % Y-grid for streamlines and contours
 xVals  = [-0.3; 1.3];                                                   % X-grid extents [min, max]
 yVals  = [-.8; 0.8];                                                   % Y-grid extents [min, max]
 
@@ -55,11 +54,11 @@ Cpxy_mask(inC) = NaN;
 %========= Stream Function Expression ==========%
 
 gamma_dS = gamma(:).*S(:); %determine strength of each vortex 
-psi = U*(YY*cos(alphaR)-XX*sin(alphaR)); %initialize stream function variable and account for sine term
+psi = U*(YY*cos(alpha)-XX*sin(alpha)); %initialize stream function variable and account for sine term
 
 %Calculate the sum of the vortex contributions to the velocity potential
 
-for j=1:numPan
+for j=1:NumPan
     dxp = (XX-xi(j));
     dyp = (YY-yi(j));
     rp = sqrt(dxp.^2 + dyp.^2);
@@ -72,17 +71,17 @@ psi_mask = psi;
 
 %========== Plot Streamlines and Stagnation Points =========%
 [row, col] = find(Cp>0.99); %Find coordinates in field that coincide with Cp ~ 1
-aoa_D = alpha %convert angle of attack to degrees for plotting
+aoa_D = alpha*(180/pi); %convert angle of attack to degrees for plotting
 
-figure; hold on; box on
-contour(XX, YY, psi_mask, 75, 'LineWidth', 0.9); %streamlines
-fill(Xj, Yj, [0.15 0.15 0.15], 'EdgeColor', 'k'); % foil body
-for i = 1:length(row)
-    plot(Xj(row(i)), Yj(row(i)), 'ro', 'MarkerSize', 3, MarkerFaceColor='r')
-end
-axis equal tight
-xlabel('x/c'); ylabel('y/c');
-title(['VPM Streamlines ($\alpha = ', num2str(aoa_D), '$ deg)' ], 'Interpreter','latex')
-legend("Streamlines",'Airfoil Body','Stagnation Points')
+% figure; hold on; box on
+% contour(XX, YY, psi_mask, 75, 'LineWidth', 0.9); %streamlines
+% fill(Xj, Yj, [0.15 0.15 0.15], 'EdgeColor', 'k'); % foil body
+% for i = 1:length(row)
+%     plot(Xj(row(i)), Yj(row(i)), 'ro', 'MarkerSize', 3, MarkerFaceColor='r')
+% end
+% axis equal tight
+% xlabel('x/c'); ylabel('y/c');
+% title(['VPM Streamlines ($\alpha = ', num2str(aoa_D), '$ deg)' ], 'Interpreter','latex')
+% legend("Streamlines",'Airfoil Body','Stagnation Points')
 end
 

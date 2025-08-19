@@ -43,9 +43,14 @@ for i = 1:NumPan %iterating over the ith control point
 
         if i == j
             K(i,j) = 0;
-            L(i,j) = 0.5;
         end
     end
    
 end
+
+%========== Ensure correct self-influence coeffic
+for i = 1:length(L(1,:))
+    L(i,i) = 0.5;
+end
+
 end

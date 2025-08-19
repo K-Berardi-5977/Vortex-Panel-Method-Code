@@ -1,12 +1,11 @@
-function [K, L] = VPM_InfluenceCoeff(xi, yi, Xj, Yj, phi, S)
-NumPan = length(xi); %iteration variable for number of panels
-K = zeros(NumPan, NumPan);
-L = zeros(NumPan, NumPan);
+function [K, L] = VPM_InfluenceCoeff(xi, yi, Xj, Yj, phi, S, numPan)
+K = zeros(numPan, numPan);
+L = zeros(numPan, numPan);
 
 
 %Defining Integral Terms:
-for i = 1:NumPan %iterating over the ith control point
-    for j = 1:NumPan %for each control point, iterate over j=1:n panels
+for i = 1:numPan %iterating over the ith control point
+    for j = 1:numPan %for each control point, iterate over j=1:n panels
         if j ~= i
             %all of the coefficient terms determined in the solution of the
             %geometric integrals 
@@ -31,21 +30,23 @@ for i = 1:NumPan %iterating over the ith control point
                 -atan2(A, E));
 
        
-        if (isnan(K(i,j)) || isinf(K(i,j)) || ~isreal(K(i,j)))
-            K(i,j) = 0;
-        end
+            if (isnan(K(i,j)) || isinf(K(i,j)) || ~isreal(K(i,j)))
+                K(i,j) = 0; %ensure all coefficients are real numbers
+            end
 
- 
-        if (isnan(L(i,j)) || isinf(L(i,j)) || ~isreal(L(i,j)))
-            L(i,j) = 0;
+            if (isnan(L(i,j)) || isinf(L(i,j)) || ~isreal(L(i,j)))
+                L(i,j) = 0; %ensure all coefficients are real numbers
+            end
         end
-        end
-
-        if i == j
-            K(i,j) = 0;
-            L(i,j) = 0.5;
+        if j==i
+            K(i,j) = 0; %ith vortex panel has no normal influence on itself 
         end
     end
-   
 end
+
+%========== Ensure correct self-influence coefficients for surface velocity matrix ==========%
+for i = 1:length(L(1,:))
+    L(i,i) = 0.5;
+end
+
 end
